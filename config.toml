@@ -1,0 +1,11 @@
+[database]
+file = "./data/verbum.db"
+
+[database.en]
+namespace = "f29d1c2c-ba46-495e-858d-ccff8c6af958"
+
+[database.sv]
+namespace = "b718cee6-edb6-4777-89a1-8546aed720b2"
+
+
+[server]
