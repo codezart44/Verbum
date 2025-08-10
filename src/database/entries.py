@@ -130,11 +130,11 @@ def main():
             ("lion", "big pussy", "lejon"),
             ("skbhf", "nonsense", None),
         ]
-        words = ["monkey", "rabbit", "turtle", "lion"]
+        words = ["monkey", "rabbit", "turtle", "lion", "skbhf", "word"]
 
         # success = insert_entries(c, entries) > 0
-        # success = delete_entries(c, words) > 0
-        success = update_entries(c, entries) > 0
+        success = delete_entries(c, words) > 0
+        # success = update_entries(c, entries) > 0
 
         print(success)
 

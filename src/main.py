@@ -1,9 +1,22 @@
 from typing import Literal
 
-def main():
+from .database.entries import insert_entries
+from .database.connect import get_connection
 
-    pass
+
+def main():
+    with open("entries.csv", mode="r", encoding="utf-8") as f:
+        lines = f.readlines()[1:]  # skip header
+
+    lines = [l.strip().split(";") for l in lines]
+    entries = [(l[0].strip().lower(), l[1].strip(), l[2].strip().lower()) for l in lines]
     
+    with get_connection() as conn:
+        c = conn.cursor()
+        success = insert_entries(c, entries)
+    
+    print(success)
+
+
 if __name__=="__main__":
     main()
-    
