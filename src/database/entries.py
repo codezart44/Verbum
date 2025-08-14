@@ -4,16 +4,17 @@ from .connect import get_connection, get_entry_id
 
 def insert_entry(
         c : sqlite3.Cursor,
-        word : str, 
-        description : str, 
+        word : str,
+        pos : str,
+        description : str,
         translation : str,
 ) -> int:
     entry_id = get_entry_id(word)
-    parameters = (entry_id, word.lower(), description, translation.lower())
+    parameters = (entry_id, word.lower(), pos, description, translation.lower())
 
     sql = """--sql
-    INSERT OR IGNORE INTO en_entries ([entry_id], [word], [description], [translation]) 
-    VALUES (?, ?, ?, ?);
+    INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation]) 
+    VALUES (?, ?, ?, ?, ?);
     """
     c.execute(sql, parameters)
     return c.rowcount
@@ -21,13 +22,13 @@ def insert_entry(
 
 def insert_entries(
         c : sqlite3.Cursor,
-        entries : list[tuple[str, str, str]]
+        entries : list[tuple[str, str, str, str]]
 ) -> int:
-    parameters = [(get_entry_id(t[0]), t[0], t[1], t[2]) for t in entries]
+    parameters = [(get_entry_id(t[0]), t[0], t[1], t[2], t[3]) for t in entries]
 
     sql = """--sql
-    INSERT OR IGNORE INTO en_entries ([entry_id], [word], [description], [translation])
-    VALUES (?, ?, ?, ?);
+    INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation])
+    VALUES (?, ?, ?, ?, ?);
     """
     c.executemany(sql, parameters)
     return c.rowcount
@@ -63,15 +64,16 @@ def delete_entries(
 def update_entry(
         c : sqlite3.Cursor,
         word : str,
+        pos : str,
         description : str,
         translation : str,
 ) -> int:
     entry_id = get_entry_id(word)
-    parameters = (description, translation.lower(), entry_id)
+    parameters = (pos, description, translation.lower(), entry_id)
 
     sql = """--sql
     UPDATE en_entries
-    SET [description] = ?, [translation] = ?
+    SET [pos] = ?, [description] = ?, [translation] = ?
     WHERE [entry_id] = ?;
     """
     c.execute(sql, parameters)
@@ -80,13 +82,13 @@ def update_entry(
 
 def update_entries(
         c : sqlite3.Cursor,
-        entries : list[tuple[str, str, str]]
+        entries : list[tuple[str, str, str, str]]
 ) -> int:
-    parameters = [(t[1], t[2], get_entry_id(t[0])) for t in entries]
+    parameters = [(t[1], t[2], t[3], get_entry_id(t[0])) for t in entries]
 
     sql = """--sql
     UPDATE en_entries
-    SET [description] = ?, [translation] = ?
+    SET [pos] = ?, [description] = ?, [translation] = ?
     WHERE [entry_id] = ?;
     """
     c.executemany(sql, parameters)
@@ -101,7 +103,7 @@ def select_entry(
     parameters = (entry_id,)
 
     sql = """--sql
-    SELECT [word], [description], [translation] FROM en_entries 
+    SELECT [word], [pos], [description], [translation] FROM en_entries 
     WHERE entry_id = ?;
     """
     c.execute(sql, parameters)
@@ -112,10 +114,24 @@ def select_entries(
         c : sqlite3.Cursor,
 ) -> list[tuple[str]]:
     sql = """--sql
-    SELECT [word], [description], [translation] FROM en_entries;
+    SELECT [word], [pos], [description], [translation] FROM en_entries;
     """
 
     c.execute(sql)
+    return c.fetchall()
+
+def select_entries_randn(
+        c : sqlite3.Cursor,
+        n : int,
+) -> list[tuple[str]]:
+    parameters = (n,)
+
+    sql = """--sql
+    SELECT [word], [pos], [description], [translation] FROM en_entries
+    ORDER BY RANDOM()
+    LIMIT ?;
+    """
+    c.execute(sql, parameters)
     return c.fetchall()
     
 
@@ -124,11 +140,11 @@ def main():
         c = conn.cursor()
 
         entries = [
-            ("monkey", "hairy man", "apa"),
-            ("rabbit", "funny furry thing", "kanin"),
-            ("turtle", "u wont crack 'im", "sköldpadda"),
-            ("lion", "big pussy", "lejon"),
-            ("skbhf", "nonsense", None),
+            ("monkey", "noun", "hairy man", "apa"),
+            ("rabbit", "noun", "funny furry thing", "kanin"),
+            ("turtle", "noun", "u wont crack 'im", "sköldpadda"),
+            ("lion", "noun", "big pussy", "lejon"),
+            ("skbhf", None, "nonsense", None),
         ]
         words = ["monkey", "rabbit", "turtle", "lion", "skbhf", "word"]
 

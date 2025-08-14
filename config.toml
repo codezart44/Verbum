@@ -3,6 +3,10 @@ path = "./data/verbum.db"
 
 [database.en]
 namespace = "f29d1c2c-ba46-495e-858d-ccff8c6af958"
+max_no_tags = 5
+max_no_examples = 2
+max_no_synonyms = 3
+max_no_antonyms = 3
 
 [database.sv]
 namespace = "b718cee6-edb6-4777-89a1-8546aed720b2"

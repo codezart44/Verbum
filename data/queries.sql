@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS en_entries (
     [entry_id] TEXT PRIMARY KEY,
     [word] TEXT NOT NULL,
+    [pos] TEXT,
     [description] TEXT,
     [translation] TEXT
 );
@@ -34,7 +35,7 @@ CREATE TABLE IF NOT EXISTS en_antonyms (
 );
 
 
--- DROP TABLE en_entries;
+DROP TABLE en_entries;
 -- DROP TABLE en_tags;
 -- DROP TABLE en_examples;
 -- DROP TABLE en_synonyms;
