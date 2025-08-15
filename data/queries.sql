@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS en_entries (
 CREATE TABLE IF NOT EXISTS en_tags (
     [tag_id] PRIMARY KEY,
     [entry_id] TEXT,
+    [word] TEXT,
     [tag] TEXT,
     FOREIGN KEY (entry_id) REFERENCES en_entries(entry_id) ON DELETE CASCADE
 );
@@ -35,7 +36,7 @@ CREATE TABLE IF NOT EXISTS en_antonyms (
 );
 
 
-DROP TABLE en_entries;
+-- DROP TABLE en_entries;
 -- DROP TABLE en_tags;
 -- DROP TABLE en_examples;
 -- DROP TABLE en_synonyms;
