@@ -13,6 +13,7 @@ max_records = 5
 [database.en.examples]
 namespace = "2177e7c3-287b-4801-b2a1-f32f659bc410"
 max_records = 2
+max_characters = 256
 
 [database.en.synonyms]
 namespace = "e23be183-8c71-4b78-b705-58ad39026ef3"

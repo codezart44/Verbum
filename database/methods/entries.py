@@ -1,23 +1,6 @@
 import sqlite3
 
-from .connect import get_connection, get_entry_id
-
-def insert_entry(
-        c : sqlite3.Cursor,
-        word : str,
-        pos : str,
-        description : str,
-        translation : str,
-) -> int:
-    entry_id = get_entry_id(word)
-    parameters = (entry_id, word.lower(), pos, description, translation.lower())
-
-    sql = """--sql
-    INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation]) 
-    VALUES (?, ?, ?, ?, ?);
-    """
-    c.execute(sql, parameters)
-    return c.rowcount
+from ..connect import get_connection, get_entry_id
 
 
 def insert_entries(
@@ -31,52 +14,6 @@ def insert_entries(
     VALUES (?, ?, ?, ?, ?);
     """
     c.executemany(sql, parameters)
-    return c.rowcount
-
-
-def delete_entry(
-        c : sqlite3.Cursor,
-        word : str,
-) -> int:
-    entry_id = get_entry_id(word)
-    parameters = (entry_id,)
-
-    sql = """--sql
-    DELETE FROM en_entries WHERE [entry_id] = ? ;
-    """
-    c.execute(sql, parameters)
-    return c.rowcount
-
-
-def delete_entries(
-        c : sqlite3.Cursor,
-        words : list[str],
-) -> int:
-    parameters = [(get_entry_id(w),) for w in words]
-
-    sql = """--sql
-    DELETE FROM en_entries WHERE [entry_id] = ?;
-    """
-    c.executemany(sql, parameters)
-    return c.rowcount
-
-
-def update_entry(
-        c : sqlite3.Cursor,
-        word : str,
-        pos : str,
-        description : str,
-        translation : str,
-) -> int:
-    entry_id = get_entry_id(word)
-    parameters = (pos, description, translation.lower(), entry_id)
-
-    sql = """--sql
-    UPDATE en_entries
-    SET [pos] = ?, [description] = ?, [translation] = ?
-    WHERE [entry_id] = ?;
-    """
-    c.execute(sql, parameters)
     return c.rowcount
 
 
@@ -95,19 +32,17 @@ def update_entries(
     return c.rowcount
 
 
-def select_entry(
+def delete_entries(
         c : sqlite3.Cursor,
-        word : str,
-) -> tuple[str]:
-    entry_id = get_entry_id(word)
-    parameters = (entry_id,)
+        words : list[str],
+) -> int:
+    parameters = [(get_entry_id(w),) for w in words]
 
     sql = """--sql
-    SELECT [word], [pos], [description], [translation] FROM en_entries 
-    WHERE entry_id = ?;
+    DELETE FROM en_entries WHERE [entry_id] = ?;
     """
-    c.execute(sql, parameters)
-    return c.fetchone()
+    c.executemany(sql, parameters)
+    return c.rowcount
 
 
 def select_entries(
@@ -119,6 +54,7 @@ def select_entries(
 
     c.execute(sql)
     return c.fetchall()
+
 
 def select_entries_randn(
         c : sqlite3.Cursor,
@@ -159,3 +95,70 @@ def main():
 
 if __name__=="__main__":
     main()
+
+
+
+
+
+
+def select_entry(
+        c : sqlite3.Cursor,
+        word : str,
+) -> tuple[str]:
+    entry_id = get_entry_id(word)
+    parameters = (entry_id,)
+
+    sql = """--sql
+    SELECT [word], [pos], [description], [translation] FROM en_entries 
+    WHERE entry_id = ?;
+    """
+    c.execute(sql, parameters)
+    return c.fetchone()
+
+def insert_entry(
+        c : sqlite3.Cursor,
+        word : str,
+        pos : str,
+        description : str,
+        translation : str,
+) -> int:
+    entry_id = get_entry_id(word)
+    parameters = (entry_id, word.lower(), pos, description, translation.lower())
+
+    sql = """--sql
+    INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation]) 
+    VALUES (?, ?, ?, ?, ?);
+    """
+    c.execute(sql, parameters)
+    return c.rowcount
+
+def delete_entry(
+        c : sqlite3.Cursor,
+        word : str,
+) -> int:
+    entry_id = get_entry_id(word)
+    parameters = (entry_id,)
+
+    sql = """--sql
+    DELETE FROM en_entries WHERE [entry_id] = ? ;
+    """
+    c.execute(sql, parameters)
+    return c.rowcount
+
+def update_entry(
+        c : sqlite3.Cursor,
+        word : str,
+        pos : str,
+        description : str,
+        translation : str,
+) -> int:
+    entry_id = get_entry_id(word)
+    parameters = (pos, description, translation.lower(), entry_id)
+
+    sql = """--sql
+    UPDATE en_entries
+    SET [pos] = ?, [description] = ?, [translation] = ?
+    WHERE [entry_id] = ?;
+    """
+    c.execute(sql, parameters)
+    return c.rowcount
