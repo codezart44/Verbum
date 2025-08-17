@@ -1,10 +1,9 @@
 import sqlite3
-from ..connect import get_connection, get_entry_id, get_tag_id
 from typing import Collection
 
 
 def insert_tags(
-        c : sqlite3.Cursor,
+        conn : sqlite3.Connection,
         word : str,
         tags : Collection[str],
 ) -> int:

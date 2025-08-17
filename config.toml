@@ -1,10 +1,24 @@
+[project]
+path = "/Users/oskarwallberg/Documents/projects/Verbum"
+
 [database]
-path = "./data/verbum.db"
+path = "database/instances/verbum.db"
 
 [database.en]
 
 [database.en.entries]
 namespace = "f29d1c2c-ba46-495e-858d-ccff8c6af958"
+
+[database.en.entries.max_characters]
+word = 32
+pos = 12  # 'interjection' is the longest, 12 characters long
+description = 256
+translation = 32
+
+[database.en.entries.min_characters]
+word = 1
+pos = 4  # 'noun' or 'verb' are the shortest, 4 characters long
+
 
 [database.en.tags]
 namespace = "331ea32e-3fc4-4082-920b-d6d6c3f285ef"
@@ -29,3 +43,6 @@ namespace = "b718cee6-edb6-4777-89a1-8546aed720b2"
 
 
 [server]
+# generated with secrets.token_hex()
+secret_key = "5ae5fde0015162d9f92dc3e7695594b5ec602a9e4e6a9b87ec264b8270cedd62"
+
