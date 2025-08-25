@@ -8,7 +8,7 @@ def test_insert_entry():
         "description": "this is a test",
         "translation": "test",
     }
-    payload = 1
+    # payload = 1
     response = requests.post(url, json=payload)
     print(response.status_code)
     print(response.text)
@@ -33,9 +33,9 @@ def test_select_randn_entries(n: int):
     print(response.text)
 
 def main():
-    # test_insert_entry()
+    test_insert_entry()
     # test_update_entry()
-    test_select_randn_entries("a")
+    # test_select_randn_entries("12")
 
 if __name__=="__main__":
     main()

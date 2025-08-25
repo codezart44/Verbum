@@ -1,5 +1,6 @@
 import sqlite3
 
+from verbum.api.utils.errors import InsertError
 
 #################### SINGLE RECORD ####################
 
@@ -16,13 +17,18 @@ def select_entry(
 def insert_entry(
         conn : sqlite3.Connection,
         parameters : tuple[str, str, str, str]
-) -> int:
+):
     sql = """--sql
     INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation]) 
     VALUES (?, ?, ?, ?, ?);
     """
     c = conn.execute(sql, parameters)
-    return c.rowcount
+    rowcount = c.rowcount
+
+    match rowcount:
+        case 0: raise InsertError(f"InsertError: Record already exists.")
+        case 1: return
+        case _: raise Exception
 
 def delete_entry(
         conn : sqlite3.Connection,

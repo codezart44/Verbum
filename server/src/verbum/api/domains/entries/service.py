@@ -1,28 +1,27 @@
-from typing import Callable
 import sqlite3
 
-from ...utils.hashing import get_entry_id
-from . import queries
-
+from verbum.api.utils.hashing import get_entry_id
+from verbum.api.domains.entries.schema import EntryParameterValidator
+from verbum.api.domains.entries import queries
+from verbum.api.domains.entries.schema import EntryFactory
+from verbum.api.utils.errors import *
 
 class EntriesService:
     def insert_one(
             conn : sqlite3.Connection,
-            entry : dict[str,str],
+            entry : dict[str, str],
         ) -> int:
-        parameters = (
-            get_entry_id(entry["word"]),
-            entry["word"],
-            entry.get("pos").lower(),
-            entry.get("description"),
-            entry.get("translation")
-        )
-        rowcount = queries.insert_entry(conn, parameters)
-        return rowcount
+        (word, pos, description, translation) = EntryFactory.destruct(entry)
+        EntryParameterValidator.valid_entry(word, pos, description, translation)
+        entry_id = get_entry_id(word)
+
+        parameters = (entry_id, word, pos, description, translation)
+        queries.insert_entry(conn, parameters)
     
+
     def update_one(
             conn : sqlite3.Connection,
-            entry : dict[str,str],
+            entry : dict[str, str],
     ) -> int:
         parameters = (
             entry.get("pos").lower(),

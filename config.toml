@@ -18,7 +18,8 @@ translation = 32
 [database.en.entries.min_characters]
 word = 1
 pos = 4  # 'noun' or 'verb' are the shortest, 4 characters long
-
+description = 0
+translation = 0
 
 [database.en.tags]
 namespace = "331ea32e-3fc4-4082-920b-d6d6c3f285ef"

@@ -2,39 +2,23 @@ import typing
 from enum import StrEnum
 from typing import TypedDict
 
-class EntryTyping(TypedDict):
-    word: str
-    pos: str
-    description: str
-    translation: str
+from server.src.verbum.api.utils.errors import PayloadError, ParameterError
 
-entry = {
-    "word": "run",
-    "pos": "verb"
-}
+x = 2
+response = dict()
 
-class EntryEnum(StrEnum):
-    WORD = "word"
-    POS = "pos"
-    DESCRIPTION = "description"
-    TRANSLATION = "translation"
+try:
+    if x == 0:
+        raise PayloadError("HELLO")
+    if x > 0:
+        raise ParameterError("HELLO 2")
+    
+    assert x == -2
+except PayloadError or ParameterError as e:
+    response["error"] = str(e)
+except Exception as e:
+    response["error"] = str(e)
+finally:
+    print("END")
 
-missing_fields = [e.value for e in EntryEnum if e not in entry.keys()]
-print(missing_fields)
-
-
-print(EntryEnum.WORD in entry)
-print("word" in EntryEnum)
-print(None in EntryEnum)
-
-entry = typing.cast(EntryTyping, entry)
-
-
-print([e.value for e in EntryEnum])
-
-var = -1
-
-match var:
-    case 0: print("Good")
-    case 1: print("Also Good")
-    case _: print("BAD")
+print(response)

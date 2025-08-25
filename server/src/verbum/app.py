@@ -1,6 +1,6 @@
 from flask import Flask
 
-from .api.domains import register_blueprints
+from verbum.api.domains import register_blueprints
 
 def create_app():
     app = Flask(__name__)

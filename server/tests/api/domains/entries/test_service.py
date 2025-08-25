@@ -1,0 +1,3 @@
+from verbum.api.domains.entries.service import EntriesService
+
+# no tests for now...
