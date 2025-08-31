@@ -1,59 +1,85 @@
 import sqlite3
 
-from verbum.api.utils.errors import InsertError
+from verbum.api.utils.errors import SelectError, DeleteError, InsertError, UpdateError
 
 #################### SINGLE RECORD ####################
 
 def select_entry(
         conn : sqlite3.Connection,
         parameters : tuple[str]
-) -> tuple[str]:
+    ) -> tuple[str]:
     sql = """--sql
     SELECT [word], [pos], [description], [translation] FROM en_entries 
     WHERE entry_id = ?;
     """
-    return conn.execute(sql, parameters).fetchone()
+    c = conn.execute(sql, parameters)
+    entry = c.fetchone()
+    match entry:
+        case None: raise SelectError("SelectError: Record does not exist.")
+        case _: return entry
+
+def delete_entry(
+        conn : sqlite3.Connection,
+        parameters : tuple[str]
+    ) -> int:
+    sql = """--sql
+    DELETE FROM en_entries WHERE [entry_id] = ? ;
+    """
+    c = conn.execute(sql, parameters)
+    match c.rowcount:
+        case 0: raise DeleteError("DeleteError: Record does not exist.")
+        case 1: return
+        case _: raise Exception
 
 def insert_entry(
         conn : sqlite3.Connection,
         parameters : tuple[str, str, str, str]
-):
+    ):
     sql = """--sql
     INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation]) 
     VALUES (?, ?, ?, ?, ?);
     """
     c = conn.execute(sql, parameters)
-    rowcount = c.rowcount
-
-    match rowcount:
-        case 0: raise InsertError(f"InsertError: Record already exists.")
+    match c.rowcount:
+        case 0: raise InsertError("InsertError: Record already exists.")
         case 1: return
         case _: raise Exception
-
-def delete_entry(
-        conn : sqlite3.Connection,
-        parameters : tuple[str]
-) -> int:
-    sql = """--sql
-    DELETE FROM en_entries WHERE [entry_id] = ? ;
-    """
-    c = conn.execute(sql, parameters)
-    return c.rowcount
 
 def update_entry(
         conn : sqlite3.Connection,
         parameters : tuple[str, str, str, str]
-) -> int:
+    ) -> int:
     sql = """--sql
     UPDATE en_entries
     SET [pos] = ?, [description] = ?, [translation] = ?
     WHERE [entry_id] = ?;
     """
     c = conn.execute(sql, parameters)
-    return c.rowcount
+    match c.rowcount:
+        case 0: raise UpdateError("UpdateError: Record does not exist.")
+        case 1: return
+        case _: raise Exception
 
 
 #################### MULTI RECORD ####################
+
+def select_entries(
+        conn : sqlite3.Connection,
+) -> list[tuple[str]]:
+    sql = """--sql
+    SELECT [word], [pos], [description], [translation] FROM en_entries;
+    """
+    return conn.execute(sql).fetchall()
+
+def delete_entries(
+        conn : sqlite3.Connection,
+        parameters : list[tuple[str]],
+) -> int:
+    sql = """--sql
+    DELETE FROM en_entries WHERE [entry_id] = ?;
+    """
+    c = conn.executemany(sql, parameters)
+    return c.rowcount
 
 def insert_entries(
         conn : sqlite3.Connection,
@@ -78,23 +104,6 @@ def update_entries(
     c = conn.executemany(sql, parameters)
     return c.rowcount
 
-def delete_entries(
-        conn : sqlite3.Connection,
-        parameters : list[tuple[str]],
-) -> int:
-    sql = """--sql
-    DELETE FROM en_entries WHERE [entry_id] = ?;
-    """
-    c = conn.executemany(sql, parameters)
-    return c.rowcount
-
-def select_entries(
-        conn : sqlite3.Connection,
-) -> list[tuple[str]]:
-    sql = """--sql
-    SELECT [word], [pos], [description], [translation] FROM en_entries;
-    """
-    return conn.execute(sql).fetchall()
 
 def select_entries_randn(
         conn : sqlite3.Connection,

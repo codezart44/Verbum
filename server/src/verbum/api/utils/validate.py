@@ -11,7 +11,7 @@ class PayloadValidator:
             raise PayloadError("PayloadError: Payload is not JSON.")
     
     @staticmethod
-    def contain_field(data: dict, field: str):
+    def contains_field(data: dict, field: str):
         if field not in data.keys():
             raise PayloadError(f"PayloadError: Missing required field [{field}].")
     

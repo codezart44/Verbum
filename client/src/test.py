@@ -16,13 +16,13 @@ def test_insert_entry():
 def test_update_entry():
     url = "http://127.0.0.1:5000/api/entries/update-one"
     payload = {
-        "word": "test",
+        "word": "asdadasd",
         "pos": "noun",
-        "description": "this is for test",
+        "description": "this is for testing",
         "translation": "test",
     }
     # payload = 1
-    response = requests.post(url, json=payload)
+    response = requests.put(url, json=payload)
     print(response.status_code)
     print(response.text)
 
@@ -32,8 +32,18 @@ def test_select_randn_entries(n: int):
     print(response.status_code)
     print(response.text)
 
+def test_select_entry():
+    url = "http://127.0.0.1:5000/api/entries/select-one/asdadasd"
+    response = requests.get(url)
+    print(response.status_code)
+    print(response.text)
+
 def main():
-    test_insert_entry()
+    # test_select_entry()
+    test_update_entry()
+    test_select_entry()
+
+    # test_insert_entry()
     # test_update_entry()
     # test_select_randn_entries("12")
 

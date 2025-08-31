@@ -33,12 +33,25 @@ class EntryEnum(StrEnum):
 class EntryFactory:
     def from_dict(data: dict[str, str]) -> _EntryTyping:
         entry: _EntryTyping = {
-            "word": data.get("pos").strip().lower(),
+            "word": data.get("word").strip().lower(),
             "pos":  data.get("pos").strip().lower(),
             "description": data.get("description").strip(),
             "translation": data.get("translation").strip(),      
         }
         return entry
+    
+    def from_values(
+            word : str,
+            pos : str,
+            description : str,
+            translation : str,
+    ) -> dict[str,str]:
+        return {
+            "word": word,
+            "pos": pos,
+            "description": description,
+            "translation": translation,
+        }
     
     def destruct(entry: dict[str, str]) -> tuple[str,str,str,str]:
         return (
