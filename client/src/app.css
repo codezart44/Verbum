@@ -1,0 +1,20 @@
+:root {
+  font-family: monospace; /* Arial, Helvetica, sans-serif */ 
+  color: white;
+  background-color: black;
+}
+
+body {
+  margin: 0;
+  display: flex;
+}
+
+#app {
+  text-align: center;
+  margin: 0 auto;
+}
+
+button {
+  border: 1px solid;
+  cursor: pointer;
+}

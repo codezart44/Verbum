@@ -8,6 +8,13 @@
 ## Run Server
 `> python -m server.run`
 
+## Run Client
+```
+> cd client
+> npm run dev
+```
+
 ## Test server endpoints
 `> python -m client.test`
+
 

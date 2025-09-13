@@ -9,6 +9,10 @@ path = "database/instances/verbum.db"
 [database.en.entries]
 namespace = "f29d1c2c-ba46-495e-858d-ccff8c6af958"
 
+[database.en.entries.nrand]
+nmin = 1
+nmax = 99
+
 [database.en.entries.max_characters]
 word = 32
 pos = 12  # 'interjection' is the longest, 12 characters long
@@ -24,6 +28,8 @@ translation = 0
 [database.en.tags]
 namespace = "331ea32e-3fc4-4082-920b-d6d6c3f285ef"
 max_records = 5
+max_characters = 16
+min_characters = 1
 
 [database.en.examples]
 namespace = "2177e7c3-287b-4801-b2a1-f32f659bc410"

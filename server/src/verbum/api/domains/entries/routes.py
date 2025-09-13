@@ -11,6 +11,7 @@ from verbum.api.domains.entries.schema import EntryFactory, EntryEnum
 
 blueprint = Blueprint("entries", __name__, url_prefix="/api/entries")
 
+# NOTE FIXME Fix problem of ExceptionType1 or ExceptionType2, where it never reaches type 2.
 
 @blueprint.get("/select-one/<string:word>")
 def select_entry(word: str):
@@ -30,6 +31,54 @@ def select_entry(word: str):
     except SelectError as e:
         response["error"] = str(e)
         return jsonify(response), StatusCode.NOT_FOUND  # Is NOT FOUND 404 reserved for api, or can it be for db resources as well? 
+    except Exception as e:
+        print(f"[log] : {e}")
+        response["error"] = "UnexpectedError: Something unexpected happened."
+        return jsonify(response), StatusCode.INTERNAL_SERVER_ERROR
+
+
+@blueprint.get("/select-all")
+def select_entries():
+    response = dict()
+
+    try:
+        with connect_db() as conn:
+            entries = EntriesService.select_randn(conn, n)
+        
+        response["data"] = entries
+        response["message"] = "Records were successfully retrieved."
+        return jsonify(response), StatusCode.OK
+    
+    except PayloadError or ParameterError as e:
+        response["error"] = str(e)
+        return jsonify(response), StatusCode.BAD_REQUEST
+    except SelectError as e:
+        response["error"] = str(e)
+        return jsonify(response), StatusCode.NOT_FOUND
+    except Exception as e:
+        print(f"[log] : {e}")
+        response["error"] = "UnexpectedError: Something unexpected happened."
+        return jsonify(response), StatusCode.INTERNAL_SERVER_ERROR 
+
+
+@blueprint.get("/select-randn/<int:n>")
+def select_entries_randn(n: int):
+    response = dict()
+
+    try:
+        with connect_db() as conn:
+            entries = EntriesService.select_randn(conn, n)
+        
+        response["data"] = entries
+        response["message"] = "Records were successfully retrieved."
+        return jsonify(response), StatusCode.OK
+
+    except PayloadError or ParameterError as e:  # NOTE FIXME Does not reach ParameterError this way, only the first exception mentioned
+        response["error"] = str(e)
+        return jsonify(response), StatusCode.BAD_REQUEST
+    except SelectError as e:
+        response["error"] = str(e)
+        return jsonify(response), StatusCode.NOT_FOUND
     except Exception as e:
         print(f"[log] : {e}")
         response["error"] = "UnexpectedError: Something unexpected happened."
@@ -114,30 +163,4 @@ def update_entry():
         response["error"] = "UnexpectedError: Something unexpected happened."
         return jsonify(response), StatusCode.INTERNAL_SERVER_ERROR
 
-# NOTE FIXME v!
-# @blueprint.get("/select-all")
-# def select_entries():
-#     with connect_db() as conn:
-#         rows = EntriesService.select_all(conn)
-#     response = { "data": rows }
-#     return jsonify(response), StatusCode.OK
-
-# @blueprint.get("/select-randn/<int:n>")
-# def select_entries_randn(n: int):
-#     validator_pipeline = []
-#     for val_f in validator_pipeline:
-#         response = val_f(n)
-#         if "error" in response:
-#             return jsonify(response), StatusCode.BAD_REQUEST
-
-#     try:
-#         with connect_db() as conn:
-#             rows = EntriesService.select_randn(conn, n)
-#     except Exception as e:
-#         print(f"[log] : {e}")
-#         response["error"] = "ServiceError: Failed to select randn records."
-#         return jsonify(response), StatusCode.INTERNAL_SERVER_ERROR
-
-#     response = { "data": rows }
-#     return jsonify(response), StatusCode.OK
 

@@ -5,8 +5,15 @@ from verbum.config import CONFIG
 from verbum.api.utils.models import POS
 from verbum.api.utils.validate import ParameterValidator
 
-MAX_CHARACTERS = CONFIG["database"]["en"]["entries"]["max_characters"]
-MIN_CHARACTERS = CONFIG["database"]["en"]["entries"]["min_characters"]
+CONFIG_ENTRIES = CONFIG["database"]["en"]["entries"]
+
+
+NRAND_MAX = CONFIG_ENTRIES["nrand"]["nmax"]
+NRAND_MIN = CONFIG_ENTRIES["nrand"]["nmin"]
+
+
+MAX_CHARACTERS = CONFIG_ENTRIES["max_characters"]
+MIN_CHARACTERS = CONFIG_ENTRIES["min_characters"]
 
 MAX_CHARACTERS_WORD = MAX_CHARACTERS["word"]
 MAX_CHARACTERS_POS = MAX_CHARACTERS["pos"]
@@ -45,15 +52,16 @@ class EntryFactory:
             pos : str,
             description : str,
             translation : str,
-    ) -> dict[str,str]:
-        return {
+    ) -> _EntryTyping:
+        entry: _EntryTyping = {
             "word": word,
             "pos": pos,
             "description": description,
             "translation": translation,
         }
+        return entry
     
-    def destruct(entry: dict[str, str]) -> tuple[str,str,str,str]:
+    def destruct(entry: _EntryTyping) -> tuple[str,str,str,str]:
         return (
             entry.get("word").lower().strip(), 
             entry.get("pos").lower().strip(), 
@@ -83,6 +91,12 @@ class EntryParameterValidator(ParameterValidator):
     def valid_translation(cls, translation: str):
         cls._max_characters(translation, MAX_CHARACTERS_TRANSLATION, EntryEnum.TRANSLATION)
         cls._min_characters(translation, MIN_CHARACTERS_TRANSLATION, EntryEnum.TRANSLATION)
+
+    @classmethod
+    def valid_n(cls, n: int):
+        cls._is_int(n)
+        cls._gt(n, NRAND_MIN-1)
+        cls._lt(n, NRAND_MAX+1)
 
     @classmethod
     def valid_entry(cls,

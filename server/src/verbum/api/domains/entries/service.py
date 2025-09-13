@@ -2,9 +2,8 @@ import sqlite3
 
 from verbum.api.utils.hashing import get_entry_id
 from verbum.api.domains.entries.schema import EntryParameterValidator
-from verbum.api.domains.entries import queries
 from verbum.api.domains.entries.schema import EntryFactory
-from verbum.api.utils.errors import *
+from verbum.api.domains.entries import queries
 
 class EntriesService:
 
@@ -47,51 +46,58 @@ class EntriesService:
         queries.update_entry(conn, parameters)
 
 
-
-
-    def insert_many(
-            conn : sqlite3.Connection,
-            entries : list[dict[str,str]]
-        ) -> int:
-        parameters = [(
-            get_entry_id(e["word"]),
-            e["word"],
-            e.get("pos").lower(),
-            e.get("description"),
-            e.get("translation")
-        ) for e in entries]
-        return queries.insert_entries(conn, parameters)
-    
-    def update_many(
-            conn : sqlite3.Connection,
-            entries : list[dict[str,str]]
-        ) -> int:
-        parameters = [(
-            e.get("pos").lower(),
-            e.get("description"),
-            e.get("translation"),
-            get_entry_id(e["word"])
-        ) for e in entries]
-        return queries.update_entries(conn, parameters)
-    
-    def delete_many(
-            conn : sqlite3.Connection,
-            words : list[str],
-        ) -> int:
-        parameters = [(get_entry_id(w),) for w in words]
-        return queries.delete_entries(conn, parameters)
-    
     def select_all(
             conn : sqlite3.Connection,
         ) -> list[tuple[str, str, str, str]]:
-        return queries.select_entries(conn)
-    
+        entries = queries.select_entries(conn)
+        return entries
+
     def select_randn(
             conn : sqlite3.Connection,
             n : int,
         ) -> list[tuple[str, str, str, str]]:
-        return queries.select_entries_randn(conn, n)
+        EntryParameterValidator.valid_n(n)
+        entries = queries.select_entries_randn(conn, n)
+        return entries
+    
 
+
+
+
+
+    # def insert_many(
+    #         conn : sqlite3.Connection,
+    #         entries : list[dict[str,str]]
+    #     ) -> int:
+    #     parameters = [(
+    #         get_entry_id(e["word"]),
+    #         e["word"],
+    #         e.get("pos").lower(),
+    #         e.get("description"),
+    #         e.get("translation")
+    #     ) for e in entries]
+    #     return queries.insert_entries(conn, parameters)
+    
+    # def update_many(
+    #         conn : sqlite3.Connection,
+    #         entries : list[dict[str,str]]
+    #     ) -> int:
+    #     parameters = [(
+    #         e.get("pos").lower(),
+    #         e.get("description"),
+    #         e.get("translation"),
+    #         get_entry_id(e["word"])
+    #     ) for e in entries]
+    #     return queries.update_entries(conn, parameters)
+    
+    # def delete_many(
+    #         conn : sqlite3.Connection,
+    #         words : list[str],
+    #     ) -> int:
+    #     parameters = [(get_entry_id(w),) for w in words]
+    #     return queries.delete_entries(conn, parameters)
+
+    
 
     # word : str,
     # pos : str,

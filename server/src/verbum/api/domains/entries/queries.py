@@ -69,41 +69,11 @@ def select_entries(
     sql = """--sql
     SELECT [word], [pos], [description], [translation] FROM en_entries;
     """
-    return conn.execute(sql).fetchall()
-
-def delete_entries(
-        conn : sqlite3.Connection,
-        parameters : list[tuple[str]],
-) -> int:
-    sql = """--sql
-    DELETE FROM en_entries WHERE [entry_id] = ?;
-    """
-    c = conn.executemany(sql, parameters)
-    return c.rowcount
-
-def insert_entries(
-        conn : sqlite3.Connection,
-        parameters : list[tuple[str, str, str, str]]
-) -> int:
-    sql = """--sql
-    INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation])
-    VALUES (?, ?, ?, ?, ?);
-    """
-    c = conn.executemany(sql, parameters)
-    return c.rowcount
-
-def update_entries(
-        conn : sqlite3.Connection,
-        parameters : list[tuple[str, str, str, str]]
-) -> int:
-    sql = """--sql
-    UPDATE en_entries
-    SET [pos] = ?, [description] = ?, [translation] = ?
-    WHERE [entry_id] = ?;
-    """
-    c = conn.executemany(sql, parameters)
-    return c.rowcount
-
+    c = conn.execute(sql)
+    entries = c.fetchall()
+    match entries:
+        case None: raise SelectError("SelectError: Records do not exist.")
+        case _: return entries
 
 def select_entries_randn(
         conn : sqlite3.Connection,
@@ -114,13 +84,48 @@ def select_entries_randn(
     ORDER BY RANDOM()
     LIMIT ?;
     """
-    return conn.execute(sql, (n,)).fetchall()
+    c = conn.execute(sql, (n,))
+    entries = c.fetchall()
+    match entries:
+        case None: raise SelectError("SelectError: Records do not exist.")
+        case _: return entries
 
 
 
 
 
+# def delete_entries(
+#         conn : sqlite3.Connection,
+#         parameters : list[tuple[str]],
+# ) -> int:
+#     sql = """--sql
+#     DELETE FROM en_entries WHERE [entry_id] = ?;
+#     """
+#     c = conn.executemany(sql, parameters)
+#     return c.rowcount
 
+# def insert_entries(
+#         conn : sqlite3.Connection,
+#         parameters : list[tuple[str, str, str, str]]
+# ) -> int:
+#     sql = """--sql
+#     INSERT OR IGNORE INTO en_entries ([entry_id], [word], [pos], [description], [translation])
+#     VALUES (?, ?, ?, ?, ?);
+#     """
+#     c = conn.executemany(sql, parameters)
+#     return c.rowcount
+
+# def update_entries(
+#         conn : sqlite3.Connection,
+#         parameters : list[tuple[str, str, str, str]]
+# ) -> int:
+#     sql = """--sql
+#     UPDATE en_entries
+#     SET [pos] = ?, [description] = ?, [translation] = ?
+#     WHERE [entry_id] = ?;
+#     """
+#     c = conn.executemany(sql, parameters)
+#     return c.rowcount
 
 
 

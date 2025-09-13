@@ -41,6 +41,15 @@ class ParameterValidator:
                 raise ParameterError("ParameterError: Parameter n should be positive, not negative.")
 
     @staticmethod
+    def _lt(n: int, max: int):
+        if not n < max:
+            raise ParameterError(f"ParameterError: Parameter n has an upper bound of {max}.")
+
+    def _gt(n: int, min: int):
+        if not n > min:
+            raise ParameterError(f"ParameterError: Parameter n has a lower bound of {min}.")
+
+    @staticmethod
     def _allowed_value(value: str, allowed: Collection[str]):
         if value not in allowed:
             raise ParameterError(f"ParameterError: Field contains invalid value '{value}'.")
@@ -56,3 +65,10 @@ class ParameterValidator:
         assert nmin >= 0
         if len(s) < nmin:
             raise ParameterError(f"ParameterError: Field [{field}] did not meet min characters needed, {nmin}.")
+
+    @staticmethod
+    def _max_records(c: Collection, nmax: int, field: str):
+        assert nmax > 0
+        if len(c) > nmax:
+            raise ParameterError(f"ParameterError: Field [{field}] exceeded max records allowed, {nmax}.")
+
