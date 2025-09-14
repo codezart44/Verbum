@@ -4,8 +4,7 @@
         activeSortOption, 
         sortOrderReversed, 
         activeFilterInputs,
-        hideDesc,
-        hidePOS,
+        activeHideOption,
     } from "../stores/menu";
     import { menuOption, sortOption } from "../typing/menu";
 
@@ -31,15 +30,22 @@
         onclick={() => handleMenuOptionChoice(menuOption.FILTER)}>
             <span>FILT</span>
     </button>
-    <button 
+    <button
+        class="navbar-menu-item">
+            <!-- Only highligh words, dont filter them away -->
+            <span>FIND</span>
+    </button>
+    <button
         class="navbar-menu-item"
         class:navbar-menu-item-selected={$activeMenuOption===menuOption.HIDE}
         onclick={() => handleMenuOptionChoice(menuOption.HIDE)}>
+            <!-- Change to SHOW -->
             <span>HIDE</span>
     </button>
-    <!-- <button class="navbar-menu-item">
-        <span>ADD</span>
-    </button> -->
+    <button
+        class="navbar-menu-item">
+            <span>+ADD</span>
+    </button>
 
     <!-- SORT -->
     <div 
@@ -113,14 +119,14 @@
     class:navbar-settings-lowered={$activeMenuOption === menuOption.HIDE}>
         <button 
             class="navbar-menu-hide-item"
-            class:navbar-menu-item-selected={$hidePOS === true}
-            onclick={() => hidePOS.set(!$hidePOS)}>
+            class:navbar-menu-item-selected={$activeHideOption.pos === true}
+            onclick={() => activeHideOption.update(prev => ({ ...prev, pos: !prev.pos }))}>
                 <span>POS</span>
         </button>
         <button 
             class="navbar-menu-hide-item"
-            class:navbar-menu-item-selected={$hideDesc === true}
-            onclick={() => hideDesc.set(!$hideDesc)}>
+            class:navbar-menu-item-selected={$activeHideOption.description === true}
+            onclick={() => activeHideOption.update(prev => ({ ...prev, description: !prev.description }))}>
                 <span>DESC</span>
         </button>
     </div>
@@ -129,15 +135,21 @@
 
 <style>
     .navbar-base-container {
+        height: 100px;
+        width: 403px;
+        position: fixed;
+        top: 0;
+        z-index: 8;
+
+        /* position: relative; */
         display: flex;
         flex-direction: column;
         align-items: baseline;
         justify-content: center;
-        position: relative;
-        height: 100px;
 
         font-weight: bold;
         color: #343434;
+        background-color: black;
 
         border-bottom-style: solid;
         border-color: white;
@@ -189,7 +201,7 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        transform: translateY(-103px);
+        transform: translateY(-108px);
 
         border-color: white;
         border-style: solid;

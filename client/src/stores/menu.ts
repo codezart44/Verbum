@@ -14,5 +14,9 @@ export let activeFilterInputs = writable({
     translation: "",
 })
 
-export let hideDesc = writable(false);
-export let hidePOS = writable(false);
+export let activeHideOption = writable({
+    word: false,
+    pos: false,
+    description: false,
+    translation: false
+});

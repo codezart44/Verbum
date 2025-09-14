@@ -1,98 +1,121 @@
 <script lang="ts">
-        import { 
-        sortOrderReversed,
-        activeFilterInputs,
-        hideDesc,
-        hidePOS,
-        activeSortOption,
-    } from "../stores/menu";
-    import { sortOption } from "../typing/menu";
+    import { fade } from "svelte/transition";
+    import { flip } from "svelte/animate";
 
-    type Entry = {
-        word: string;
-        pos: string;
-        description: string;
-        translation: string;
-    }
+    import { selectedEntry } from "../stores/data";
+    import type { Entry } from "../typing/data";
+
+    const tempExamples = [
+        "This is one example sentence that includes the word.",
+        "Here we can express another sentence that includes the word. This is even a double sentence.",
+        "This is the final sentence showcasing the word!",
+    ]
+
+    const tempSynonyms = [
+        "these", "words", "are", "temporary", "placeholders"
+    ]
+
     type InputProps = {
         entries: Entry[];
-        editEntry: (word: string) => void;
+        hidePOS: boolean;
+        hideDesc: boolean;
         deleteEntry: (word: string) => void
     };
 
-    let { entries, editEntry, deleteEntry }: InputProps = $props();
+    let { entries, hidePOS, hideDesc, deleteEntry }: InputProps = $props();
 
-    let displayEntries = $derived.by(() => {
-        let _entries = [...entries];
+    let renderList: string[] = $state([]);
+    let expandList: string[] = $state([]);
+    let processingAnimation = $state(false);
 
-        // filter
-        _entries = $activeFilterInputs.word !== ""
-            ? _entries.filter((e) => e.word.includes($activeFilterInputs.word))
-            : _entries;
-        _entries = $activeFilterInputs.pos !== ""
-            ? _entries.filter((e) => e.pos.includes($activeFilterInputs.pos))
-            : _entries;
-        _entries = $activeFilterInputs.description !== ""
-            ? _entries.filter((e) => e.description.includes($activeFilterInputs.description))
-            : _entries;
-        _entries = $activeFilterInputs.translation !== ""
-            ? _entries.filter((e) => e.translation.includes($activeFilterInputs.translation))
-            : _entries;
+    const renderDuration = 600;
+    const expandDuration = 600;
 
-        // sort
-        if ($activeSortOption === sortOption.ALPH) {
-            _entries = _entries.sort((a, b) => a.word.localeCompare(b.word));
-        } else if ($activeSortOption === sortOption.WLEN) {
-            _entries = _entries.sort((a, b) => a.word.length - b.word.length);
-        } else if ($activeSortOption === sortOption.RAND) {
-            _entries = _entries.sort((a, b) => Math.random() - 0.5);
+    function handleExpandRender(word: string) {
+        processingAnimation = true;
+        if (expandList.includes(word)) {
+            setTimeout(() => expandList = [], expandDuration);
+        } else {
+            expandList = [...expandList, word];
+            setTimeout(() => expandList = [word], expandDuration);
         }
-        _entries = $sortOrderReversed ? _entries.reverse() : _entries;
-        return _entries
-    });
-    
+        if (renderList.includes(word)) {
+            renderList = [];
+        } else {
+            renderList = [];
+            setTimeout(() => renderList = [word], renderDuration);
+        }
+        setTimeout(() => processingAnimation = false, Math.max(renderDuration, expandDuration));
+    }
 </script>
 
 <div class="entries-container">
-    {#each displayEntries as entry, index}
-    <div class="entry-row-container">
+    {#each entries as entry, index(entry.word)}
+    <div 
+        class="entry-row-container"
+        class:expanded={expandList.includes(entry.word)}
+        animate:flip
+    >   
+        <!-- buttons -->
+        <button 
+        class="entry-item-button info-button"
+        class:info-button-highlighted={expandList.includes(entry.word)}
+        disabled={processingAnimation} 
+        onclick={() => handleExpandRender(entry.word)}>
+            <p style="margin: 0px;">{expandList.includes(entry.word) ? "-" : "+"}</p>
+        </button>
+        <button class="entry-item-button edit-button" onclick={() => selectedEntry.set(entry)}>
+            <p style="margin: 0px;">E</p>
+        </button>
+        <button class="entry-item-button remove-button" onclick={() => deleteEntry(entry.word)}>
+            <p style="margin: 0px;">X</p>
+        </button>
+
+        <!-- content -->
         <div class="entry-row-main-container">
-            <div class="entry-row-header-container">
-                <div class="entry-index">
-                    <p>{ index }</p>
-                </div>
-                <div class="entry-header">
-                    <p>
-                        { entry.word.length > 32 ? `${entry.word.slice(0, 32)}...` : entry.word } 
-                        {!$hidePOS ? `(${entry.pos})` : ""}
-                    </p>
-                </div>
-            </div>
-            {#if !$hideDesc}
-                <div class="entry-row-body-container">
-                    <p>• { entry.description ? entry.description : "enter some explanation of the word here..." }</p>
+            <span class="entry-word">{ entry.word.length > 32 ? `${entry.word.slice(0, 32)}...` : entry.word } </span>
+            {#if renderList.includes(entry.word)}
+                <div class="entry-expanded-content" transition:fade={{ duration: renderDuration }}>
+                    {#if !hidePOS}
+                        <div class="entry-subheader" transition:fade={{ duration: renderDuration }}>
+                            <span class="entry-pos">{ entry.pos }</span>
+                            <span class="entry-index">({ index })</span>
+                        </div>
+                        <hr>
+                    {/if}
+                    {#if !hideDesc}
+                        <span class="entry-expanded-content-title" style="padding-top: 10px;" transition:fade={{ duration: renderDuration }}>Description</span>
+                        <p class="entry-description" transition:fade={{ duration: renderDuration }}>{ entry.description }</p>
+                    {/if}
+                    <span class="entry-expanded-content-title">Synonyms</span>
+                    <span style="padding-top: 10px;">
+                        {#each tempSynonyms as synonym}
+                            <span class="entry-info-synonym-item">{ synonym }</span>
+                        {/each}
+                    </span>
+                    <span class="entry-expanded-content-title">Examples</span>
+                    <div class="entry-examples-container">
+                        {#each tempExamples as example}
+                            <span style="padding-bottom: 5px;">• { example }</span>
+                        {/each}
+                    </div>
+                    <span class="entry-expanded-content-title">Translation</span>
+                    <span style="font-size: small;">{ entry.translation }</span>
                 </div>
             {/if}
         </div>
-        <div class="entry-row-side-container">
-            <button class="remove-button" onclick={() => deleteEntry(entry.word)}>
-                <p style="margin: 0px;">X</p>
-            </button>
-            <button class="edit-button" onclick={() => editEntry(entry.word)}>
-                <p style="margin: 0px;">E</p>
-            </button>
-        </div>
+
     </div>
     {/each}
 </div>
 
 <style>
-    /* base container */
+    /* entries container */
     .entries-container {
         width: 400px;
     }
 
-    /* base row container */
+    /* entry container */
     .entry-row-container {
         position: relative;
         min-height: 20px;
@@ -101,106 +124,147 @@
         flex-wrap: nowrap;
         justify-content: left;
         margin-top: 5px;
-        margin-bottom: 5px;
         
+        background-color: black;
         border-color: white;
         border-style: solid;
         border-top-width: 6px;
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
+        /* transition: min-height 1.2s; */
+        transition: min-height 0.6s;
     }
-
-    .entry-row-container:hover {
-        background-color: #343434;
+    .expanded {
+        min-height: 500px;
     }
-    .entry-row-container:hover .entry-header {
-        text-decoration: underline;
+    /* .entry-row-container:hover {
+        background-color: #212121;
+    } */
+    hr {
+        width: 100%;
+        border: none;
+        border-top: 1px solid white;
+        margin: 0px auto;
     }
 
     /* main container */
     .entry-row-main-container {
-        width: 380px;
+        display: flex;
+        flex-direction: column;
+        justify-content: baseline;
+        align-items: baseline;
+        width: 100%;
+        /* padding-left: 10px;
+        padding-right: 10px;
+        padding-bottom: 10px;
+        padding-top: 10px; */
+        padding: 10px;
     }
 
     /* header */
-    .entry-row-header-container {
+    .entry-word {
+        font-size: medium;
+        font-weight: bold;
+    }
+    .entry-row-container:hover .entry-word {
+        text-decoration: underline;
+    }
+    .entry-subheader {
+        margin-top: 4px;
+        width: 100%;
         display: flex;
         flex-direction: row;
-        justify-content: left;
-        align-items: center;
-        height: 20px;
-        width: 380px;
+        align-items: baseline;
+        justify-content: space-between;
     }
-
-    .entry-header {
-        font-size: small;
+    .entry-pos {
+        font-size: x-small;
+        font-style: italic;
     }
-
     .entry-index {
-        width: 15px;
         font-size: x-small;
     }
-
+    
+    
     /* body */
-    .entry-row-body-container {
-        display: flex;
+    .entry-description {
+        font-size: x-small;
         text-align: left;
-        justify-content: flex-start;
-        align-items: flex-start;
-        min-height: 35px;
-        padding-left: 20px;
-
+        margin: 0px;
+        padding: 0px;
+        padding-top: 6px;
+    }
+    .entry-expanded-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: baseline;
+        align-items: baseline;
+    }
+    .entry-expanded-content-title {
+        padding-top: 30px;
+        font-size: small;
+        font-style: italic;
+    }
+    .entry-info-synonym-item {
+        font-size: x-small;
+        border-style: solid;
+        border-color: white;
+        padding: 2px 7px 2px 7px;
+        margin-right: 5px;
+        border-width: 1px;
+        border-radius: 6px;
+    }
+    .entry-examples-container {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
         font-size: x-small;
     }
 
-    /* side menu */
-    .entry-row-side-container {
-        position: relative;
-        width: 20px;
-    }
-
-    .remove-button {
+    /* Buttons */
+    .entry-item-button {
         position: absolute;
-        top: 1px;
-        right: 1px;
-
         height: 15px;
         width: 15px;
         padding: 0%;
         font-size: 10px;
         font-weight: 500;
 
+        font-family: monospace;
         color: white;
-        background-color: inherit;
+        background-color: black;
         border-color: white;
-        transition: background-color 0.15s;
-        transition: border-color 0.35s;
+        transition: 1s;
     }
-
+    .remove-button {
+        top: 1px;
+        right: 1px;
+    }
     .remove-button:hover {
         background-color: brown;
     }
-
     .edit-button {
-        position: absolute;
         top: 1px;
         right: 17px;
-
-        height: 15px;
-        width: 15px;
-        padding: 0%;
-        font-size: 10px;
-        font-weight: 500;
-
-        color: white;
-        background-color: inherit;
-        border-color: white;
-        transition: background-color 0.15s;
-        transition: border-color 0.35s;
     }
-
     .edit-button:hover {
         background-color: #cc9005;
+    }
+    .info-button {
+        top: 1px;
+        right: 33px;
+    }
+    /* .info-button:hover {
+        background-color: rgb(42, 63, 166);
+    } */
+    .info-button:disabled {
+        /* background-color: white; */
+        cursor: auto;
+    }
+    .info-button-highlighted {
+        background-color: white;
+        color: black;
     }
 </style>
 
