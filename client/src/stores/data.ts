@@ -22,4 +22,5 @@ export let emptyEntry: Entry = {
     examples: [],
     tags: [],
 }
+
 export let selectedEntry = writable({ ...emptyEntry });

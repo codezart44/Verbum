@@ -1,6 +1,6 @@
 <script lang="ts">
     import EntriesList from "../components/EntriesList.svelte";
-    import EntryInfo from "../components/EntryEditor.svelte";
+    import EntryEditor from "../components/EntryEditor.svelte";
     import { entries } from "../stores/data";
     
     import { selectedEntry } from "../stores/data";
@@ -64,7 +64,7 @@
 
 <div class="page-layout">
     {#if $selectedEntry.word !== ""}
-        <EntryInfo/>
+        <EntryEditor/>
     {/if}
     <EntriesList
         entries={displayEntries}
