@@ -1,7 +1,9 @@
 export const menuOption = {
     SORT: 0,
     FILTER: 1,
-    HIDE: 2,
+    FIND: 2,
+    SHOW: 3,
+    ADD: 4,
     NONE: -1,
 };
 export const sortOption = {

@@ -1,7 +1,6 @@
 import { writable } from "svelte/store";
 import { menuOption, sortOption } from "../typing/menu";
 
-
 export let activeMenuOption = writable(menuOption.NONE);
 
 export let activeSortOption = writable(sortOption.NONE);
@@ -14,9 +13,19 @@ export let activeFilterInputs = writable({
     translation: "",
 })
 
-export let activeHideOption = writable({
+export let activeFindInputs = writable({
+    word: "",
+})
+
+export let activeShowOption = writable({
     word: false,
     pos: false,
     description: false,
-    translation: false
+    synonyms: false,
+    antonyms: false,
+    examples: false,
+    translation: false,
+    tags: false,
 });
+
+// export let addWord = writable(undefined);

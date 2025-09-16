@@ -3,6 +3,7 @@
     import { flip } from "svelte/animate";
 
     import { selectedEntry } from "../stores/data";
+    import { activeShowOption, activeFindInputs } from "../stores/menu";
     import type { Entry } from "../typing/data";
 
     const tempExamples = [
@@ -17,19 +18,17 @@
 
     type InputProps = {
         entries: Entry[];
-        hidePOS: boolean;
-        hideDesc: boolean;
         deleteEntry: (word: string) => void
     };
 
-    let { entries, hidePOS, hideDesc, deleteEntry }: InputProps = $props();
+    let { entries, deleteEntry }: InputProps = $props();
 
     let renderList: string[] = $state([]);
     let expandList: string[] = $state([]);
     let processingAnimation = $state(false);
 
-    const renderDuration = 600;
-    const expandDuration = 600;
+    const renderDuration = 400;
+    const expandDuration = 400;
 
     function handleExpandRender(word: string) {
         processingAnimation = true;
@@ -50,10 +49,11 @@
 </script>
 
 <div class="entries-container">
-    {#each entries as entry, index(entry.word)}
+    {#each entries as entry, index (entry.word)}
     <div 
         class="entry-row-container"
         class:expanded={expandList.includes(entry.word)}
+        class:disabled={processingAnimation}
         animate:flip
     >   
         <!-- buttons -->
@@ -73,36 +73,54 @@
 
         <!-- content -->
         <div class="entry-row-main-container">
-            <span class="entry-word">{ entry.word.length > 32 ? `${entry.word.slice(0, 32)}...` : entry.word } </span>
-            {#if renderList.includes(entry.word)}
-                <div class="entry-expanded-content" transition:fade={{ duration: renderDuration }}>
-                    {#if !hidePOS}
+            <span 
+                class="entry-word" 
+                class:highlighted={$activeFindInputs.word !== "" && !entry.word.toLowerCase().includes($activeFindInputs.word.toLowerCase())}>
+                    { entry.word.length > 32 ? `${entry.word.slice(0, 32)}...` : entry.word }
+            </span>
+            <div class="entry-expanded-content" transition:fade={{ duration: renderDuration }}>
+                {#if $activeShowOption.pos || renderList.includes(entry.word)}
+                    <div class="entry-expanded-content-cell" style="padding-bottom: 10px;">
                         <div class="entry-subheader" transition:fade={{ duration: renderDuration }}>
                             <span class="entry-pos">{ entry.pos }</span>
                             <span class="entry-index">({ index })</span>
                         </div>
-                        <hr>
-                    {/if}
-                    {#if !hideDesc}
-                        <span class="entry-expanded-content-title" style="padding-top: 10px;" transition:fade={{ duration: renderDuration }}>Description</span>
-                        <p class="entry-description" transition:fade={{ duration: renderDuration }}>{ entry.description }</p>
-                    {/if}
-                    <span class="entry-expanded-content-title">Synonyms</span>
-                    <span style="padding-top: 10px;">
-                        {#each tempSynonyms as synonym}
-                            <span class="entry-info-synonym-item">{ synonym }</span>
-                        {/each}
-                    </span>
-                    <span class="entry-expanded-content-title">Examples</span>
-                    <div class="entry-examples-container">
-                        {#each tempExamples as example}
-                            <span style="padding-bottom: 5px;">• { example }</span>
-                        {/each}
+                        <hr transition:fade={{ duration: renderDuration }}>
                     </div>
-                    <span class="entry-expanded-content-title">Translation</span>
-                    <span style="font-size: small;">{ entry.translation }</span>
-                </div>
-            {/if}
+                {/if}
+                {#if $activeShowOption.description || renderList.includes(entry.word)}
+                    <div class="entry-expanded-content-cell">
+                        <span class="entry-expanded-content-title" transition:fade={{ duration: renderDuration }}>Description</span>
+                        <p class="entry-description" transition:fade={{ duration: renderDuration }}>{ entry.description }</p>
+                    </div>
+                {/if}
+                {#if $activeShowOption.synonyms || renderList.includes(entry.word)}
+                    <div class="entry-expanded-content-cell">
+                        <span class="entry-expanded-content-title" transition:fade={{ duration: renderDuration }}>Synonyms</span>
+                        <span style="padding-top: 10px;" transition:fade={{ duration: renderDuration }}>
+                            {#each tempSynonyms as synonym}
+                                <span class="entry-info-synonym-item">{ synonym }</span>
+                            {/each}
+                        </span>
+                    </div>
+                {/if}
+                {#if $activeShowOption.examples || renderList.includes(entry.word)}
+                    <div class="entry-expanded-content-cell">
+                        <span class="entry-expanded-content-title" transition:fade={{ duration: renderDuration }}>Examples</span>
+                        <div class="entry-examples-container" transition:fade={{ duration: renderDuration }}>
+                            {#each tempExamples as example}
+                                <span style="padding-bottom: 5px;">• { example }</span>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
+                {#if $activeShowOption.translation || renderList.includes(entry.word)}
+                    <div class="entry-expanded-content-cell">
+                        <span class="entry-expanded-content-title" transition:fade={{ duration: renderDuration }}>Translation</span>
+                        <span style="font-size: small;" transition:fade={{ duration: renderDuration }}>{ entry.translation }</span>
+                    </div>
+                {/if}
+            </div>
         </div>
 
     </div>
@@ -132,7 +150,7 @@
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
         /* transition: min-height 1.2s; */
-        transition: min-height 0.6s;
+        transition: min-height 0.4s;
     }
     .expanded {
         min-height: 500px;
@@ -165,6 +183,9 @@
     .entry-word {
         font-size: medium;
         font-weight: bold;
+    }
+    .highlighted {
+        color: #242424;
     }
     .entry-row-container:hover .entry-word {
         text-decoration: underline;
@@ -201,8 +222,15 @@
         justify-content: baseline;
         align-items: baseline;
     }
+    .entry-expanded-content-cell {
+        padding-bottom: 20px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: baseline;
+        align-items: baseline;
+    }
     .entry-expanded-content-title {
-        padding-top: 30px;
         font-size: small;
         font-style: italic;
     }
@@ -260,7 +288,7 @@
     } */
     .info-button:disabled {
         /* background-color: white; */
-        cursor: auto;
+        cursor: not-allowed;
     }
     .info-button-highlighted {
         background-color: white;

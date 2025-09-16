@@ -4,15 +4,35 @@
         activeSortOption, 
         sortOrderReversed, 
         activeFilterInputs,
-        activeHideOption,
+        activeFindInputs,
+        activeShowOption,
     } from "../stores/menu";
     import { menuOption, sortOption } from "../typing/menu";
+    import { entries } from "../stores/data";
 
     function handleMenuOptionChoice(option: number): void {
         activeMenuOption.set((option === $activeMenuOption) ? menuOption.NONE : option);
     }
     function handleSortOptionChoice(option: number): void {
         activeSortOption.set((option === $activeSortOption) ? sortOption.NONE : option);
+    }
+
+    let addWord = $state("");
+    let disableAdd = $derived.by(() => {
+        return addWord === "" 
+            || addWord === undefined 
+            || $entries.map((entry => entry.word)).includes(addWord);
+    });
+
+    function handleAddNewWord() {
+        // CONTINUE HERE!! ASASDASDAS
+        // ALSO MAKE THE "SHOW" MENU ALL INACTIVE, DISPLAY AMONG COLLAPSED CARDS WHEN TOGGLED ON
+        //     USER CAN STYLE HIS CARDS HIMSELF
+        //     MAKES MORE SENSE THAN CURRENT VERSION WHERE YOU CAN TOGGLE AWAY FROM EXPANDE CARD...
+        //     WOULD REQUIRE THE CARD INFO ITEMS TO BE CONDITIONALLY RENDERED WITH AN OR CONDITION
+        //         EITHER CARD IS EXPANDED OR TURNED ON IN SHOW MENU
+        console.log(addWord);
+        addWord = "";
     }
 </script>
 
@@ -31,19 +51,22 @@
             <span>FILT</span>
     </button>
     <button
-        class="navbar-menu-item">
+        class="navbar-menu-item"
+        class:navbar-menu-item-selected={$activeMenuOption===menuOption.FIND}
+        onclick={() => handleMenuOptionChoice(menuOption.FIND)}>
             <!-- Only highligh words, dont filter them away -->
             <span>FIND</span>
     </button>
     <button
         class="navbar-menu-item"
-        class:navbar-menu-item-selected={$activeMenuOption===menuOption.HIDE}
-        onclick={() => handleMenuOptionChoice(menuOption.HIDE)}>
-            <!-- Change to SHOW -->
-            <span>HIDE</span>
+        class:navbar-menu-item-selected={$activeMenuOption===menuOption.SHOW}
+        onclick={() => handleMenuOptionChoice(menuOption.SHOW)}>
+            <span>SHOW</span>
     </button>
     <button
-        class="navbar-menu-item">
+        class="navbar-menu-item"
+        class:navbar-menu-item-selected={$activeMenuOption===menuOption.ADD}
+        onclick={() => handleMenuOptionChoice(menuOption.ADD)}>
             <span>+ADD</span>
     </button>
 
@@ -113,21 +136,73 @@
         />
     </div>
 
-    <!-- HIDE -->
+    <!-- FIND -->
     <div 
     class="navbar-menu-settings"
-    class:navbar-settings-lowered={$activeMenuOption === menuOption.HIDE}>
+    class:navbar-settings-lowered={$activeMenuOption === menuOption.FIND}>
+        <input 
+            type="text"
+            bind:value={$activeFindInputs.word}
+            placeholder="WORD"
+            class="navbar-menu-filter-item"
+            class:navbar-menu-filter-item-filled={$activeFindInputs.word !== ""}
+        />
+    </div>
+
+    <!-- SHOW -->
+    <div 
+    class="navbar-menu-settings"
+    class:navbar-settings-lowered={$activeMenuOption === menuOption.SHOW}>
         <button 
-            class="navbar-menu-hide-item"
-            class:navbar-menu-item-selected={$activeHideOption.pos === true}
-            onclick={() => activeHideOption.update(prev => ({ ...prev, pos: !prev.pos }))}>
+            class="navbar-menu-show-item"
+            class:navbar-menu-item-selected={$activeShowOption.pos === true}
+            onclick={() => activeShowOption.update(prev => ({ ...prev, pos: !prev.pos }))}>
                 <span>POS</span>
         </button>
         <button 
-            class="navbar-menu-hide-item"
-            class:navbar-menu-item-selected={$activeHideOption.description === true}
-            onclick={() => activeHideOption.update(prev => ({ ...prev, description: !prev.description }))}>
+            class="navbar-menu-show-item"
+            class:navbar-menu-item-selected={$activeShowOption.description === true}
+            onclick={() => activeShowOption.update(prev => ({ ...prev, description: !prev.description }))}>
                 <span>DESC</span>
+        </button>
+        <button
+            class="navbar-menu-show-item"
+            class:navbar-menu-item-selected={$activeShowOption.synonyms === true}
+            onclick={() => activeShowOption.update(prev => ({ ...prev, synonyms: !prev.synonyms }))}>
+                <span>SYNS</span>
+        </button>
+        <button
+            class="navbar-menu-show-item"
+            class:navbar-menu-item-selected={$activeShowOption.examples === true}
+            onclick={() => activeShowOption.update(prev => ({ ...prev, examples: !prev.examples }))}>
+                <span>EXS</span>
+        </button>
+        <button
+            class="navbar-menu-show-item"
+            class:navbar-menu-item-selected={$activeShowOption.translation === true}
+            onclick={() => activeShowOption.update(prev => ({ ...prev, translation: !prev.translation }))}>
+                <span>TRNS</span>
+        </button>
+    </div>
+
+    <!-- +ADD -->
+    <div 
+    class="navbar-menu-settings"
+    class:navbar-settings-lowered={$activeMenuOption === menuOption.ADD}>
+        <input 
+            type="text"
+            bind:value={addWord}
+            placeholder="WORD"
+            class="navbar-menu-filter-item"
+            class:navbar-menu-filter-item-filled={addWord !== ""}
+        />
+        <button
+            class="navbar-menu-add-button"
+            onclick={() => handleAddNewWord()}
+            disabled={disableAdd}>
+            <!-- CLEAR THE INPUT FIELD UPON PRESSIGN + BUTTON -->
+            <!-- DISABLE BUTTON UNLESS VALID WORD INPUT -->
+                <span>+</span>
         </button>
     </div>
 
@@ -228,6 +303,8 @@
     .navbar-menu-filter-item {
         margin-left: 3px;
         margin-right: 3px;
+        padding-left: 6px;
+        padding-right: 6px;
         color: #343434;
         border: solid;
         border-radius: 0px;
@@ -248,7 +325,7 @@
         box-shadow: none;
     }
 
-    .navbar-menu-hide-item {
+    .navbar-menu-show-item {
         margin-left: 3px;
         margin-right: 3px;
         color: #343434;
@@ -256,8 +333,27 @@
         font-family: monospace;
         background-color: inherit;
     }
-    .navbar-menu-hide-item:hover {
+    .navbar-menu-show-item:hover {
         text-decoration: underline;
+    }
+    .navbar-menu-add-button {
+        margin-left: 3px;
+        margin-right: 3px;
+        color: white;
+        border: solid;
+        font-family: monospace;
+        background-color: green;
+        border-color: white;
+        transition: 1.2s;
+    }
+    /* .navbar-menu-add-button:hover {
+        background-color: ;
+    } */
+    .navbar-menu-add-button:disabled {
+        background-color: black;
+        border-color: #343434;
+        color: #343434;
+        cursor: not-allowed;
     }
     
 </style>

@@ -14,7 +14,7 @@
 
 <div class="entry-info-background-shader">
     <div class="entry-info-container">
-        <button class="remove-button" onclick={() => selectedEntry.set(emptyEntry)}>
+        <button class="remove-button" onclick={() => selectedEntry.set({ ...emptyEntry })}>
             <span>X</span>
         </button>
         <div class="entry-info-header-container">
